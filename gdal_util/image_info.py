@@ -1,3 +1,8 @@
+def get_mtl_filename_from_band_file(filename):
+    filename = filename.split(".")[0]
+    return filename.split("_")[0] + "_MTL.txt"
+
+
 def read_mtl_file(filepath):
     mtl_content = {}
     current_dict_reference = mtl_content
@@ -15,3 +20,12 @@ def read_mtl_file(filepath):
                 key_value_pair = stripped_line.split(" = ")
                 current_dict_reference[key_value_pair[0]] = key_value_pair[1].replace("\"", "")
     return mtl_content
+
+
+def get_band_name_from_mtl_file(band, filename):
+    mtl_content = read_mtl_file(filename)
+    return get_band_name_from_mtl_content(band, mtl_content)
+
+
+def get_band_name_from_mtl_content(band, mtl_content):
+    return mtl_content["L1_METADATA_FILE"]["PRODUCT_METADATA"][f"FILE_NAME_BAND_{band}"].replace("LC", "LO")
