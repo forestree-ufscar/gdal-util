@@ -3,13 +3,17 @@ def get_mtl_filename_from_band_file(filename):
     return filename.split("_")[0] + "_MTL.txt"
 
 
-def read_mtl_from_content(content: str):
-    return _read_mtl_from_content(content.splitlines())
+def read_mtl(**kwargs):
+    content = kwargs.get("content")
+    filepath = kwargs.get("filepath")
 
-
-def read_mtl_file(filepath):
-    with open(filepath) as f:
-        lines = f.readlines()
+    if filepath:
+        with open(filepath) as f:
+            lines = f.readlines()
+    elif content:
+        lines = content.splitlines()
+    else:
+        raise Exception("None content and filepath parameters were provided")
     return _read_mtl_from_content(lines)
 
 
@@ -31,21 +35,31 @@ def _read_mtl_from_content(content):
     return mtl_content
 
 
-def get_band_name_from_mtl_file(band, filename):
-    mtl_content = read_mtl_file(filename)
-    return get_band_name_from_mtl_content(band, mtl_content)
+def get_band_name_from_mtl(band, **kwargs):
+    content = kwargs.get("content")
+    filepath = kwargs.get("filepath")
 
+    if filepath:
+        mtl_content = read_mtl(filepath=filepath)
+    elif content:
+        mtl_content = content
+    else:
+        raise Exception("None content and filepath parameters were provided")
 
-def get_band_name_from_mtl_content(band, mtl_content):
     return mtl_content["L1_METADATA_FILE"]["PRODUCT_METADATA"][f"FILE_NAME_BAND_{band}"].replace("LC", "LO")
 
 
-def get_inpe_name_from_mtl_file(filename):
-    mtl_content = read_mtl_file(filename)
-    return get_inpe_name_from_mtl_content(mtl_content)
+def get_inpe_name_from_mtl(**kwargs):
+    content = kwargs.get("content")
+    filepath = kwargs.get("filepath")
 
+    if filepath:
+        mtl_content = read_mtl(filepath=filepath)
+    elif content:
+        mtl_content = content
+    else:
+        raise Exception("None content and filepath parameters were provided")
 
-def get_inpe_name_from_mtl_content(mtl_content):
     orbit = mtl_content["L1_METADATA_FILE"]["PRODUCT_METADATA"]["WRS_PATH"]
     point = mtl_content["L1_METADATA_FILE"]["PRODUCT_METADATA"]["WRS_ROW"]
     date = mtl_content["L1_METADATA_FILE"]["PRODUCT_METADATA"]["DATE_ACQUIRED"]
