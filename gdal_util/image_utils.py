@@ -11,6 +11,18 @@ def get_info(filepath, band=1):
                      dataset.RasterCount, geo_transform[0], geo_transform[1], geo_transform[3], geo_transform[5])
 
 
+def read_raster(filepath, bands=None):
+    if bands is None:
+        bands = [1]
+
+    dataset = gdal.Open(filepath)
+    response = []
+    for band in bands:
+        raster = dataset.GetRasterBand(band)
+        response.append(raster.ReadAsArray())
+    return response[0] if len(response) == 1 else response
+
+
 class ImageInfo:
 
     def __init__(self, minimum, maximum, mean, std_dev, raster_x_size, raster_y_size, raster_count,
