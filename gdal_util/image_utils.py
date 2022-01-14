@@ -1,4 +1,10 @@
+import os
+import tempfile
+
 from osgeo import gdal
+from osgeo.scripts import gdal_merge
+
+ORFEO_TOOLBOX_PATH = os.path.join(os.getenv("ORFEO_TOOLBOX_PATH"), "bin")
 
 
 def get_info(filepath, band=1):
@@ -21,6 +27,44 @@ def read_raster(filepath, bands=None):
         raster = dataset.GetRasterBand(band)
         response.append(raster.ReadAsArray())
     return response[0] if len(response) == 1 else response
+
+
+def merge_image(output_file, inputs):
+    gdal_merge.main(["", "-separate", "-of", "GTiff", "-o", output_file] + inputs)
+
+
+def superimpose(output_file, input_pan, input_mosaic):
+    cmd = os.path.join(ORFEO_TOOLBOX_PATH,
+                       "otbcli_Superimpose") + " -lms 0 -interpolator linear -elev.default 0 -inr {} -inm {} -out {}" \
+              .format(input_pan, input_mosaic, output_file)
+    os.system(cmd)
+
+
+def pansharpening_command(output_file, input_pan, input_super):
+    cmd = os.path.join(ORFEO_TOOLBOX_PATH, "otbcli_Pansharpening") + " -method rcs -inp {} -inxs {} -out {}" \
+        .format(input_pan, input_super, output_file)
+    os.system(cmd)
+
+
+def convert_int16(output_file, input_file, no_data=0):
+    options = gdal.TranslateOptions(format='GTiff', outputType=gdal.GDT_UInt16, noData=no_data)
+    gdal.Translate(output_file, input_file, options=options)
+
+
+def pansharpening(output_file, merge_files, pan_file, temp_folder=tempfile.gettempdir()):
+    merge_output = tempfile.mktemp(suffix="tmp", dir=temp_folder)
+    merge_image(merge_output, merge_files)
+
+    superimpose_output = tempfile.mktemp(suffix="tmp", dir=temp_folder)
+    superimpose(superimpose_output, pan_file, merge_files)
+    os.remove(merge_output)
+
+    pansharpening_output = tempfile.mktemp(suffix="tmp", dir=temp_folder)
+    pansharpening_command(pansharpening_output, pan_file, superimpose_output)
+    os.remove(superimpose_output)
+
+    convert_int16(output_file, pansharpening_output)
+    os.remove(pansharpening_output)
 
 
 class ImageInfo:
