@@ -52,14 +52,14 @@ def convert_int16(output_file, input_file, no_data=0):
 
 
 def pansharpening(output_file, merge_files, pan_file, temp_folder=tempfile.gettempdir()):
-    merge_output = tempfile.mktemp(suffix="tmp", dir=temp_folder)
+    merge_output = tempfile.mktemp(suffix=".tif", dir=temp_folder)
     merge_image(merge_output, merge_files)
 
-    superimpose_output = tempfile.mktemp(suffix="tmp", dir=temp_folder)
+    superimpose_output = tempfile.mktemp(suffix=".tif", dir=temp_folder)
     superimpose(superimpose_output, pan_file, merge_output)
     os.remove(merge_output)
 
-    pansharpening_output = tempfile.mktemp(suffix="tmp", dir=temp_folder)
+    pansharpening_output = tempfile.mktemp(suffix=".tif", dir=temp_folder)
     pansharpening_command(pansharpening_output, pan_file, superimpose_output)
     os.remove(superimpose_output)
 
