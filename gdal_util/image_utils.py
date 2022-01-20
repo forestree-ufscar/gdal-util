@@ -56,7 +56,7 @@ def pansharpening(output_file, merge_files, pan_file, temp_folder=tempfile.gette
     merge_image(merge_output, merge_files)
 
     superimpose_output = tempfile.mktemp(suffix="tmp", dir=temp_folder)
-    superimpose(superimpose_output, pan_file, merge_files)
+    superimpose(superimpose_output, pan_file, merge_output)
     os.remove(merge_output)
 
     pansharpening_output = tempfile.mktemp(suffix="tmp", dir=temp_folder)
