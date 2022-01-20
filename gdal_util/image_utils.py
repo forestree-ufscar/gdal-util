@@ -2,7 +2,7 @@ import os
 import tempfile
 
 from osgeo import gdal
-from osgeo.scripts import gdal_merge
+from osgeo_utils import gdal_merge
 
 ORFEO_TOOLBOX_PATH = os.path.join(os.getenv("ORFEO_TOOLBOX_PATH"), "bin")
 
