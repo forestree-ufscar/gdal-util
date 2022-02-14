@@ -1,6 +1,7 @@
 import os
 import tempfile
 
+import numpy as np
 from osgeo import gdal
 from osgeo_utils import gdal_merge
 
@@ -65,6 +66,54 @@ def pansharpening(output_file, merge_files, pan_file, temp_folder=tempfile.gette
 
     convert_int16(output_file, pansharpening_output)
     os.remove(pansharpening_output)
+
+
+def get_patches(bands, x, y, path, percent=0.7, augmentation=False, all_patches=False):
+    """
+    inputs:
+        bands: number of bands
+        x: x size of path
+        y: y size of path
+        path: image path
+        percent: minimum of pixels in a path
+    output:
+        patch_xy array
+    """
+
+    patches = []
+    raster_array = read_raster(path, bands=list(range(1, bands)))
+
+    for i in range(0, raster_array.shape[1], x):
+        for j in range(0, raster_array.shape[2], y):
+            patch_ij = raster_array[0:bands, i:i + x, j:j + y]
+            if patch_ij.mean() > 0 or all_patches:
+                patch_xy = np.zeros((bands, x, y))
+                patch_xy[0:bands, 0:min(x, raster_array.shape[1] - i), 0:min(y, raster_array.shape[2] - j)] = patch_ij
+
+                if all_patches or np.count_nonzero(patch_xy) > x * y * percent * bands:
+                    patches.append(patch_xy if not augmentation else _get_augmentation(patch_xy, bands))
+
+    return patches
+
+
+def _get_augmentation(patch_xy, bands):
+    flip = np.flip(patch_xy)
+    flip_0 = np.flip(patch_xy, 0)
+    flip_1 = np.flip(patch_xy, 1)
+
+    matrix_b = []
+    for b in range(0, bands):
+        matrix = []
+
+        for width in range(0, min(patch_xy.shape[1], flip.shape[1])):
+            matrix.append(np.concatenate((patch_xy[b][width], flip[b][width])))
+
+        for height in range(0, min(flip_0.shape[1], flip_1.shape[1])):
+            matrix.append(np.concatenate((flip_0[b][height], flip_1[b][height])))
+
+        matrix_b.append(matrix)
+
+    return np.array(matrix_b)
 
 
 class ImageInfo:
