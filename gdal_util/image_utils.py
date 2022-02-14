@@ -82,13 +82,14 @@ def get_patches(bands, x, y, path, percent=0.7, augmentation=False, all_patches=
 
     patches = []
     raster_array = read_raster(path, bands=list(range(1, bands)))
+    shape = raster_array.shape
 
-    for i in range(0, raster_array.shape[1], x):
-        for j in range(0, raster_array.shape[2], y):
+    for i in range(0, shape[1], x):
+        for j in range(0, shape[2], y):
             patch_ij = raster_array[0:bands, i:i + x, j:j + y]
             if patch_ij.mean() > 0 or all_patches:
                 patch_xy = np.zeros((bands, x, y))
-                patch_xy[0:bands, 0:min(x, raster_array.shape[1] - i), 0:min(y, raster_array.shape[2] - j)] = patch_ij
+                patch_xy[0:bands - 1, 0:min(x, shape[1] - i), 0:min(y, shape[2] - j)] = patch_ij
 
                 if all_patches or np.count_nonzero(patch_xy) > x * y * percent * bands:
                     patches.append(patch_xy if not augmentation else _get_augmentation(patch_xy, bands))
