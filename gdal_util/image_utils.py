@@ -27,7 +27,7 @@ def read_raster(filepath, bands=None):
     for band in bands:
         raster = dataset.GetRasterBand(band)
         response.append(raster.ReadAsArray())
-    return response[0] if len(response) == 1 else response
+    return response[0] if len(response) == 1 else np.asarray(response)
 
 
 def merge_image(output_file, inputs):
