@@ -117,6 +117,12 @@ def _get_augmentation(patch_xy, bands):
     return np.array(matrix_b)
 
 
+def reduce_image(input_file, output_file, top_left, down_right, no_data=0, proj_win_srs="EPSG:32722"):
+    proj_win = [top_left.x, top_left.y, down_right.x, down_right.y]
+    options = gdal.TranslateOptions(format="GTiff", projWin=proj_win, noData=no_data, projWinSRS=proj_win_srs)
+    gdal.Translate(output_file, input_file, options=options)
+
+
 class ImageInfo:
 
     def __init__(self, minimum, maximum, mean, std_dev, raster_x_size, raster_y_size, raster_count,
