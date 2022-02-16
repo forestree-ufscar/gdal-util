@@ -118,7 +118,7 @@ def _get_augmentation(patch_xy, bands):
 
 
 def reduce_image(input_file, output_file, top_left, down_right, no_data=0, proj_win_srs="EPSG:32722"):
-    proj_win = [top_left.x, top_left.y, down_right.x, down_right.y]
+    proj_win = [top_left.x, down_right.x, top_left.y, down_right.y]
     options = gdal.TranslateOptions(format="GTiff", projWin=proj_win, noData=no_data, projWinSRS=proj_win_srs)
     gdal.Translate(output_file, input_file, options=options)
 
