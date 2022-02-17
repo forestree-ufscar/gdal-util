@@ -1,3 +1,4 @@
+import math
 import os
 import tempfile
 
@@ -21,6 +22,8 @@ def get_info(filepath, band=1):
 def read_raster(filepath, bands=None):
     if bands is None:
         bands = [1]
+    elif isinstance(bands, int):
+        bands = list(range(1, bands))
 
     dataset = gdal.Open(filepath)
     response = []
@@ -81,7 +84,7 @@ def get_patches(bands, x, y, path, percent=0.7, augmentation=False, all_patches=
     """
 
     patches = []
-    raster_array = read_raster(path, bands=list(range(1, bands)))
+    raster_array = read_raster(path, bands)
     shape = raster_array.shape
 
     for i in range(0, shape[1], x):
@@ -121,6 +124,26 @@ def reduce_image(input_file, output_file, top_left, down_right, no_data=0, proj_
     proj_win = [top_left.x, top_left.y, down_right.x, down_right.y]
     options = gdal.TranslateOptions(format="GTiff", projWin=proj_win, noData=no_data, projWinSRS=proj_win_srs)
     gdal.Translate(output_file, input_file, options=options)
+
+
+def get_areas_of_fragmented_image(path, x_size, y_size):
+    info = get_info(path)
+    rc = info.raster_coordinate
+    x_res = info.west_east_resolution
+    y_res = info.north_south_resolution
+    raster = read_raster(path, info.raster_count)
+
+    data_areas = []
+    for x in range(math.ceil(rc.top_left.x), math.floor(rc.down_right.x - (x_res * x_size)), int(x_res * x_size)):
+        for y in range(math.ceil(rc.top_left.y), math.floor(rc.down_right.y - (y_res * y_size)), int(y_res * y_size)):
+            top_left = PixelCoordinate(x, y)
+            down_right = PixelCoordinate(x + (x_res * x_size), y + (y_res * y_size))
+            x_pixel = int((x - math.ceil(rc.top_left.x)) / x_size)
+            y_pixel = int((y - math.ceil(rc.top_left.y)) / y_size)
+            if raster[0:info.raster_count, x_pixel:x_pixel + x_size, y_pixel:y_pixel + y_size].mean() > 0:
+                data_areas.append((top_left, down_right))
+
+    return data_areas
 
 
 class ImageInfo:
