@@ -138,7 +138,7 @@ def get_areas_of_fragmented_image(path, x_size, y_size):
         for y in range(math.ceil(rc.top_left.y), math.floor(rc.down_right.y - (y_res * y_size)), int(y_res * y_size)):
             x_pixel = int((x - math.ceil(rc.top_left.x)) / x_res)
             y_pixel = int((y - math.ceil(rc.top_left.y)) / y_res)
-            if raster[0:info.raster_count, x_pixel:x_pixel + x_size, y_pixel:y_pixel + y_size].mean() > 0:
+            if raster[0:info.raster_count, y_pixel:y_pixel + y_size, x_pixel:x_pixel + x_size].mean() > 0:
                 top_left = PixelCoordinate(x, y)
                 down_right = PixelCoordinate(x + (x_res * x_size), y + (y_res * y_size))
                 data_areas.append((top_left, down_right))
