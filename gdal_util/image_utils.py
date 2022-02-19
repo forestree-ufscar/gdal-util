@@ -140,9 +140,8 @@ def get_areas_of_fragmented_image(path, x_size, y_size, image_percent=0.8):
             x_pixel = int((x - math.ceil(rc.top_left.x)) / x_res)
             y_pixel = int((y - math.ceil(rc.top_left.y)) / y_res)
 
-            if (image_percent < 1 and np.count_nonzero(
-                    raster[0:info.raster_count, y_pixel:y_pixel + y_size, x_pixel:x_pixel + x_size]) > min_data) or \
-                    raster[0:info.raster_count, y_pixel:y_pixel + y_size, x_pixel:x_pixel + x_size].mean() > 0:
+            patch = raster[0:info.raster_count, y_pixel:y_pixel + y_size, x_pixel:x_pixel + x_size]
+            if (image_percent < 1 and np.count_nonzero(patch) > min_data) or patch.min() > 0:
                 top_left = PixelCoordinate(x, y)
                 down_right = PixelCoordinate(x + (x_res * x_size), y + (y_res * y_size))
                 data_areas.append((top_left, down_right))
